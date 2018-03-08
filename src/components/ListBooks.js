@@ -6,13 +6,10 @@ class ListBooks extends Component {
 
 	state = {}
 
-	onChangeHandler = (event) => {
-		const shelf = event.target.value;
-		BooksAPI.update(this.props.book, shelf).then(book => console.log("updated"));
-	}
+	
 
 	render() {
-		const { title, books, bookShelves } = this.props;	
+		const { title, books, bookShelves, handleBookUpdate } = this.props;	
 
 		return (
 			<div className="list-books">
@@ -24,7 +21,7 @@ class ListBooks extends Component {
 	              <div>
 	                {bookShelves.map((bookShelf, i) => {
 	                  const filteredBooks = books.filter(book => book.shelf === bookShelf.id);
-	                  return <BookShelf key={bookShelf.id} shelf={bookShelf.title} books={filteredBooks} />;
+	                  return <BookShelf key={bookShelf.id} shelf={bookShelf.title} books={filteredBooks} handleBookUpdate={handleBookUpdate} />;
 	                })}                 
 	              </div>
 	            </div>

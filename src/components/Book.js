@@ -6,15 +6,13 @@ class Book extends Component {
 
 	state = {}
 
-	onChangeHandler = (event) => {
-		console.log("clicked", event.target.value);
-
-		const shelf = event.target.value;
-		BooksAPI.update(this.props.book, shelf).then(book => console.log("updated"));
+	handleChange = (event) => {
+		this.props.handleBookUpdate(this.props.book, event.target.value);
 	}
 
 	render() {
-		const { title, authors, imageLinks, shelf } = this.props.book;
+		const { id, title, authors, imageLinks, shelf } = this.props.book;
+		const { handleBookUpdate } = this.props; 
 		const bookCoverStyles = {
 			width: 120,
 			height: 180,
@@ -25,7 +23,7 @@ class Book extends Component {
 			<div className="book">
 	            <div className="book-top">
 	                <div className="book-cover" style={ bookCoverStyles }></div>
-	                <BookShelfChanger shelf={shelf} onChangeHandler={this.onChangeHandler} />
+	                <BookShelfChanger shelf={shelf} handleChange={this.handleChange} />
 	             </div>
 	            <div className="book-title">{title}</div>
 	            <div className="book-authors">{authors}</div>
