@@ -1,30 +1,28 @@
 import React from 'react';
 import ListBooks from './components/ListBooks';
+import { Route, Link } from 'react-router-dom';
 import * as BooksAPI from './BooksAPI';
+import { Debounce } from 'react-throttle';
 // import * as BooksAPI from './BooksAPI'
+
 import './App.css'
 
 
 class BooksApp extends React.Component {
 
    state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
-    showSearchPage: false,
     bookShelves: [
       {id: 'currentlyReading', title: 'Currently Reading'}, 
       {id: 'wantToRead', title: 'Want to Read'}, 
       {id: 'read', title: 'Read'}
     ],
-    books: []
+    books: [],
+    searchResults: [],
+    searchError: ''
   }
 
   componentDidMount() {
-      this.getAllBooks();
+    this.getAllBooks();
   }
 
   getAllBooks = () => {
@@ -35,42 +33,77 @@ class BooksApp extends React.Component {
     BooksAPI.update(book, shelf).then(() => this.getAllBooks());
   }
 
-  render() {
-    console.log(this.state)
+  handleSearchChange = (e) => {
+    if(e.target.value != '') {
+      BooksAPI.search(e.target.value).then((searchResults) => {
+        console.log(searchResults)
+        if(!searchResults.error) { 
+          searchResults.forEach((book, i) => {
+            this.state.books.forEach((sbook) => {
+              if(sbook.id === book.id) { searchResults[i].shelf = sbook.shelf }
+            })
+          })     
+          this.setState({ searchResults });
+          this.setState({ searchError: ''});
+        } else {
+          this.setState({ searchResults: [] });
+          this.setState({ searchError: searchResults.error});
+        }
+      })
+    } else {
+      this.setState({ searchResults: [] });
+    }
+  }
 
-    const { books, bookShelves } = this.state;
+  render() {
+
+    const { books, bookShelves, searchResults, searchError } = this.state;
   
     return (
       <div className="app">
-        {this.state.showSearchPage ? (
-          <div className="search-books">
+
+          <Route path="/search" render={({history}) => (
+            <div className="search-books">
             <div className="search-books-bar">
-              <a className="close-search" onClick={() => this.setState({ showSearchPage: false })}>Close</a>
-              <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                <input type="text" placeholder="Search by title or author"/>
-
+              <Link to={{
+                pathname: '/'
+              }} className='close-search'>Close</Link>
+              <div className="search-books-input-wrapper">        
+                <Debounce time="300" handler="onChange">
+                    <input type="text" autoFocus placeholder="Search by title or author" onChange={this.handleSearchChange} />
+                </Debounce>
               </div>
             </div>
             <div className="search-books-results">
-              <ol className="books-grid"></ol>
+              {searchResults.length > 0 && (
+                <ListBooks books={searchResults} handleBookUpdate={this.updateBook} title="Search Results" />
+              )}
+              {searchError !=='' && (
+                <div>
+                  <p>Sorry, your search returned no results, please try again.</p>
+                  <p>Error Code: searchError</p>
+                </div>
+              )}
+             
             </div>
-          </div>
-        ) : (
 
-          <ListBooks books={books} bookShelves={bookShelves} handleBookUpdate={this.updateBook} title="My Books" />
-          
-        )}
+          </div>
+          )} />
+
+          <Route exact path="/" render={() => (      
+            <div>
+              <ListBooks books={books} bookShelves={bookShelves} handleBookUpdate={this.updateBook} title="My Books" />              
+              <div className="open-search">
+                <Link to={{
+                pathname: '/search'
+                }} className='open-search' onClick={() => this.setState({ searchResults: []})}>Search</Link>
+              </div>
+            </div>        
+          )} />   
+       
       </div>
     )
   }
 }
 
-export default BooksApp
+export default BooksApp;

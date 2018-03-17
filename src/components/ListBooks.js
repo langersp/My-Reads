@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import BookShelf from './BookShelf';
-import * as BooksAPI from '../BooksAPI';
+import Book from './Book';
 
 class ListBooks extends Component {
 
-	state = {}
-
-	
+	static propTypes = {
+    	handleBookUpdate: PropTypes.func.isRequired
+  	}
 
 	render() {
+
 		const { title, books, bookShelves, handleBookUpdate } = this.props;	
 
 		return (
@@ -19,10 +21,23 @@ class ListBooks extends Component {
 
 	            <div className="list-books-content">
 	              <div>
-	                {bookShelves.map((bookShelf, i) => {
-	                  const filteredBooks = books.filter(book => book.shelf === bookShelf.id);
-	                  return <BookShelf key={bookShelf.id} shelf={bookShelf.title} books={filteredBooks} handleBookUpdate={handleBookUpdate} />;
-	                })}                 
+	                {bookShelves ? (
+		                bookShelves.map((bookShelf, i) => {
+		                  const filteredBooks = books.filter(book => book.shelf === bookShelf.id);
+		                  return <BookShelf key={bookShelf.id} shelf={bookShelf.title} books={filteredBooks} handleBookUpdate={handleBookUpdate} />;
+		                })
+                    ) : (
+	                    <ol className="books-grid">
+		                   {
+			                    books.map((book, i) => { 
+			                        return (
+			                        <li key={i}>
+			                        	<Book book={book} handleBookUpdate={handleBookUpdate} />
+			                        </li>)
+			                    }) 
+		               		}
+		                </ol>
+	                )}                 
 	              </div>
 	            </div>
 

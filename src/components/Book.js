@@ -1,22 +1,27 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import BookShelfChanger from './BookShelfChanger';
-import * as BooksAPI from '../BooksAPI';
 
 class Book extends Component {
 
-	state = {}
+	static propTypes = {
+    	book: PropTypes.object.isRequired,
+    	handleBookUpdate: PropTypes.func.isRequired
+  	}
 
 	handleChange = (event) => {
 		this.props.handleBookUpdate(this.props.book, event.target.value);
 	}
 
 	render() {
-		const { id, title, authors, imageLinks, shelf } = this.props.book;
+		const { title, authors, imageLinks, shelf } = this.props.book;
 		const { handleBookUpdate } = this.props; 
+		let thumbnail;
+		if(imageLinks) { thumbnail = imageLinks.thumbnail } 
 		const bookCoverStyles = {
 			width: 120,
 			height: 180,
-			backgroundImage: `url(${imageLinks.thumbnail})`
+			backgroundImage: `url(${thumbnail})`
 		}
 
 		return (
